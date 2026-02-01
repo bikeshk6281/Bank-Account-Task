@@ -1,11 +1,127 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<module type="JAVA_MODULE" version="4">
-  <component name="NewModuleRootManager" inherit-compiler-output="true">
-    <exclude-output />
-    <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
-    </content>
-    <orderEntry type="inheritedJdk" />
-    <orderEntry type="sourceFolder" forTests="false" />
-  </component>
-</module>
+package Bank;
+
+import java.util.ArrayList;
+
+// ABSTRACT CLASS
+abstract class BankAccount {
+
+    private String accountNumber;
+    private String accountHolderName;
+    protected double balance;
+
+    public BankAccount(String accountNumber, String accountHolderName) {
+        this.accountNumber = accountNumber;
+        this.accountHolderName = accountHolderName;
+        this.balance = 0.0;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+
+    public String getAccountHolderName() {
+        return accountHolderName;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void deposit(double amount) {
+        if (amount > 0) {
+            balance += amount;
+        } else {
+            System.out.println("Deposit amount positive hona chahiye.");
+        }
+    }
+
+    public void withdraw(double amount) {
+        if (amount > 0 && amount <= balance) {
+            balance -= amount;
+        } else {
+            System.out.println("Invalid withdrawal ya insufficient balance.");
+        }
+    }
+
+    public abstract String getAccountDetails();
+}
+
+// SAVINGS ACCOUNT
+class SavingsAccount extends BankAccount {
+
+    private double interestRate;
+
+    public SavingsAccount(String accNo, String name, double interestRate) {
+        super(accNo, name);
+        this.interestRate = interestRate;
+    }
+
+    public void applyInterest() {
+        double interest = balance * interestRate;
+        balance += interest;
+    }
+
+    @Override
+    public String getAccountDetails() {
+        return "Savings Account #" + getAccountNumber()
+                + ", Balance: $" + String.format("%.2f", balance)
+                + ", Rate: " + (interestRate * 100) + "%";
+    }
+}
+
+// CHECKING ACCOUNT
+class CheckingAccount extends BankAccount {
+
+    private double overdraftLimit;
+
+    public CheckingAccount(String accNo, String name, double overdraftLimit) {
+        super(accNo, name);
+        this.overdraftLimit = overdraftLimit;
+    }
+
+    @Override
+    public void withdraw(double amount) {
+        if (amount > 0 && (balance - amount) >= -overdraftLimit) {
+            balance -= amount;
+
+            if (balance < 0) {
+                System.out.println("Overdraft used!");
+            }
+        } else {
+            System.out.println("Overdraft limit exceed ho gaya.");
+        }
+    }
+
+    @Override
+    public String getAccountDetails() {
+        return "Checking Account #" + getAccountNumber()
+                + ", Balance: $" + String.format("%.2f", balance)
+                + ", Limit: $" + overdraftLimit;
+    }
+}
+
+// MAIN CLASS
+public class BankManager {
+
+    public static void main(String[] args) {
+
+        ArrayList<BankAccount> accounts = new ArrayList<>();
+
+        BankAccount savings = new SavingsAccount("1445678", "Rahul", 0.02);
+        BankAccount checking = new CheckingAccount("122142", "Amit", 500);
+
+        accounts.add(savings);
+        accounts.add(checking);
+
+        savings.deposit(200);
+        checking.withdraw(100);
+
+        if (savings instanceof SavingsAccount) {
+            ((SavingsAccount) savings).applyInterest();
+        }
+
+        for (BankAccount acc : accounts) {
+            System.out.println(acc.getAccountDetails());
+        }
+    }
+}
